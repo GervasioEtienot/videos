@@ -1,53 +1,60 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import BarraBusqueda from './BarraBusqueda';
 import './App.css';
 import youtube from '../apis/youtube';
 import ListaVideos from './ListaVideos';
 import DetalleVideo from './DetalleVideo';
 
-class App extends React.Component{
-    state = { videos: [], videoSeleccionado: null }
+const App = () => {
+    // state = { videos: [], videoSeleccionado: null }
+    const [ state, setState] = useState({
+        videos: [],
+        selectedVideo: null
+    });
+
+    const { videos, selectedVideo } = state;
+    useEffect(() => {
+        onTermSubmit('leones');
+    },[]);
     
-    componentDidMount() {
-        this.onTermSubmit('leones');
-    }
-    
-    onTermSubmit = async (term) => {
+    const onTermSubmit = async (term) => {
         const respuesta = await youtube.get('/search',{
             params: {
                 q: term
             }
         });
        // console.log(respuesta.data.items);
-        this.setState({videos: respuesta.data.items,
-                       videoSeleccionado: respuesta.data.items[0] 
-        });
+        setState({ 
+            ...state, 
+            videos: respuesta.data.items,
+            selectedVideo: respuesta.data.items[0]
+        } 
+        );
     };
 
-    onVideoSeleccionado = (video) => {
-        this.setState({ videoSeleccionado: video });
+    const onSelectedVideo = (video) => {
+        setState({ ...state, selectedVideo: video });
     };
-
-    render(){
-        return (
-            <div className="General" >
-               <div className="ui container" >
-                  <BarraBusqueda onBusquedaEnviar={this.onTermSubmit} />
-                  <div className="ui grid">
-                    <div className="ui row">
-                       <div className="eleven wide column">
-                          <DetalleVideo video={this.state.videoSeleccionado} />
-                       </div>
-                       <div className="five wide column">
-                          <ListaVideos onVideoSeleccionado={this.onVideoSeleccionado} videos={this.state.videos} />
-                       </div> 
+    
+    return (
+        <div className="General" >
+            <div className="ui container" >
+                <BarraBusqueda onTermSubmit={onTermSubmit} />
+                <div className="ui grid">
+                <div className="ui row">
+                    <div className="eleven wide column">
+                        <DetalleVideo video={selectedVideo} />
+                    </div>
+                    <div className="five wide column">
+                        <ListaVideos onSelectedVideo={onSelectedVideo} videos={videos} />
                     </div> 
-                  </div>
-               </div>
+                </div> 
+                </div>
             </div>
-            
-            );
-    }
+        </div>
+        
+        );
+    
 }
 
 export default App;
